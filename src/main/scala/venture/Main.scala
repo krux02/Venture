@@ -20,7 +20,7 @@ import Tools._
 import org.lwjgl.BufferUtils
 import scala.util.Random
 import org.lwjgl.input.Mouse
-import MapSettings.tileSize
+import MapSettings._
 import simplex3d.math.Vec2i
 
 object Tools {
@@ -43,57 +43,26 @@ object Tools {
 	}
 }
 
-
-object TestShader {
-	val vertexShaderSrc = """
-#version 330
-layout(location = 0) in vec4 position;
-
-void main()
-{
-    gl_Position = position*vec4(1.0/20.0, 1.0/15.0, 1, 1)*4-vec4(0,0,0,0);
-}
-"""
-	
-	val fragmentShaderSrc = """
-#version 330
-uniform sampler2DArray arrayTexture;
-		
-out vec4 outputColor;
-void main()
-{
-    outputColor = texture(arrayTexture, vec3(gl_PointCoord, gl_PrimitiveID % 100 ));
-}
-"""
-	import Shader.{createProgram, createShader}
-	
-	val shaderList = List(createShader(GL_VERTEX_SHADER, vertexShaderSrc), createShader(GL_FRAGMENT_SHADER, fragmentShaderSrc))
-    val theProgram = createProgram(shaderList);
-	shaderList foreach glDeleteShader
-	
-	val texLoc = glGetUniformLocation(theProgram, "arrayTexture");
-}
-
 object LwjglApp { 
 	var running = true;
 	
-	val width  = 640
-	val height = 480
+	val width  = 1024+512
+	val height = 1024
 	
 	var posX,posY = 0.0
 	
 	def mouseWordPos = {
-		val x = posX + (Mouse.getX -  width*0.5) / tileSize
-		val y = posY + (Mouse.getY - height*0.5) / tileSize
+		val x = posX + (Mouse.getX -  width*0.5) / (tileSize * Foreground.tileScale)
+		val y = posY + (Mouse.getY - height*0.5) / (tileSize * Foreground.tileScale)
 		Vec2(x,y)
 	}
 	
 	def main(args: Array[String]){
 		Display.setDisplayMode(new DisplayMode(width,height))
+		Display.setVSyncEnabled(true)
 		Display.create
 		
 		glEnable(GL_POINT_SPRITE)
-		glPointSize(tileSize)
 		
 		glEnable(GL_BLEND)
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA)
@@ -102,6 +71,8 @@ object LwjglApp {
 		Texture.tiles.bind
 		
 		var current:Short = 0;
+		
+		val sb = new StringBuilder
 		
 		while(running) {
 			Display.update
@@ -116,17 +87,80 @@ object LwjglApp {
 			
 			val offsetX = (width*0.5 / tileSize)
 			val offsetY = (height*0.5 / tileSize)
-			
-			posX += (mousePos.x-posX)*0.001;
-			posY += (mousePos.y-posY)*0.001;
 
+			import Keyboard._
+			val move = if( isKeyDown(KEY_LCONTROL) || isKeyDown(KEY_RCONTROL) ) 1 else 0.25
 			
-			Map.drawRect(posX,posY,offsetX,offsetY)
-			if(Mouse.isButtonDown(0))
-				Map(mouseX, mouseY) = current;
-			if(Mouse.isButtonDown(1))
-				current = Map(mouseX,mouseY)
+			if( isKeyDown(KEY_I) )
+				posX -= move
+			if( isKeyDown(KEY_E) )
+				posX += move
+			if( isKeyDown(KEY_A) )
+				posY -= move
+			if( isKeyDown(KEY_L) )
+				posY += move
 			
+			// event Keyboard
+			while( Keyboard.next ) {
+				// eventKey 
+				val key = getEventKey
+				val state = getEventKeyState
+				
+				if( state ) {
+					key match {
+						case KEY_LMENU | KEY_RMENU => sb.clear()
+						case KEY_1 | KEY_NUMPAD1 => sb += '1'
+						case KEY_2 | KEY_NUMPAD2 => sb += '2'
+						case KEY_3 | KEY_NUMPAD3 => sb += '3'
+						case KEY_4 | KEY_NUMPAD4 => sb += '4'
+						case KEY_5 | KEY_NUMPAD5 => sb += '5'
+						case KEY_6 | KEY_NUMPAD6 => sb += '6'
+						case KEY_7 | KEY_NUMPAD7 => sb += '7'
+						case KEY_8 | KEY_NUMPAD8 => sb += '8'
+						case KEY_9 | KEY_NUMPAD9 => sb += '9'
+						case KEY_0 | KEY_NUMPAD0 => sb += '0'
+						case _     => 
+					}
+				}
+				else {
+					key match {
+						case KEY_LMENU | KEY_RMENU => 
+							if(! sb.isEmpty)
+							try {
+								current = sb.result.toShort
+							} catch {
+								case x => println(x.getMessage)
+							}
+						case _ =>
+					}
+				}
+			}
+			while( Mouse.next ) {
+				import Mouse._
+				if(getEventButtonState) {
+					getEventButton match {
+						case 0 => 
+							if( isKeyDown(KEY_LCONTROL) || isKeyDown(KEY_RCONTROL) )
+								DirectBackground(mouseX,mouseY) = current
+							else
+								Foreground(mouseX, mouseY) = current;
+						case 1 => current = Foreground(mouseX,mouseY)
+						case _ => 
+					}
+				}	
+			}
+			current = (current + Mouse.getDWheel / 120).toShort
+			
+			if( Mouse.isButtonDown(2) ){
+				val x = (Mouse.getX -  width*0.5) / (tileSize*Foreground.tileScale)
+				val y = (Mouse.getY - height*0.5) / (tileSize*Foreground.tileScale)
+				posX += x * 0.1
+				posY += y * 0.1
+			}
+			
+			Background.drawRect(posX,posY,offsetX,offsetY)
+			DirectBackground.drawRect(posX,posY,offsetX,offsetY)
+			Foreground.drawRect(posX,posY,offsetX,offsetY)
 			
 			Display.swapBuffers()
 		}

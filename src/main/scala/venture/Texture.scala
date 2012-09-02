@@ -28,7 +28,7 @@ object Texture {
 			throw x
 	}
 	
-	val tiles = tile(16,16,"bugtilesblue.png")
+	val tiles = tile(16,16,"simple.png")
 	
 	private def tile(w:Int,h:Int,filename:String) = {
 		val image = ImageIO.read(new File("textures",filename))

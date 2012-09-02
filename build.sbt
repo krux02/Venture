@@ -1,4 +1,4 @@
-name := "hello"
+name := "Venture"
 
 version := "1.0"
 
