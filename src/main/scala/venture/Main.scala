@@ -57,6 +57,8 @@ object LwjglApp {
 		Vec2(x,y)
 	}
 	
+	var currentOutline = Array[org.jbox2d.common.Vec2]()
+	
 	def main(args: Array[String]){
 		Display.setDisplayMode(new DisplayMode(width,height))
 		Display.setVSyncEnabled(true)
@@ -69,9 +71,10 @@ object LwjglApp {
 		
 		glActiveTexture(GL_TEXTURE0)
 		Texture.tiles.bind
+		glActiveTexture(GL_TEXTURE1)
+		Texture.playerTexture.bind
 		
 		var current:Short = 0;
-		
 		val sb = new StringBuilder
 		
 		while(running) {
@@ -100,6 +103,15 @@ object LwjglApp {
 			if( isKeyDown(KEY_L) )
 				posY += move
 			
+			if( isKeyDown(KEY_N) )
+				Player.posX -= move
+			if( isKeyDown(KEY_T) )
+				Player.posX += move
+			if( isKeyDown(KEY_R) )
+				Player.posY -= move
+			if( isKeyDown(KEY_G) )
+				Player.posY += move
+				
 			// event Keyboard
 			while( Keyboard.next ) {
 				// eventKey 
@@ -135,6 +147,7 @@ object LwjglApp {
 					}
 				}
 			}
+			
 			while( Mouse.next ) {
 				import Mouse._
 				if(getEventButtonState) {
@@ -145,22 +158,41 @@ object LwjglApp {
 							else
 								Foreground(mouseX, mouseY) = current;
 						case 1 => current = Foreground(mouseX,mouseY)
+						case 2 => 
+							currentOutline = Foreground.outlineAt(mouseX,mouseY).grouped(2).map{case Array(x,y) => new org.jbox2d.common.Vec2(x,y)}.toArray
+							print("outline vertices: ")
+							println(currentOutline.length)
+							println(currentOutline.mkString)
+							//Physics.addGroundPolygon(currentOutline,new org.jbox2d.common.Vec2(0,0))
 						case _ => 
 					}
 				}	
 			}
 			current = (current + Mouse.getDWheel / 120).toShort
 			
+			/*
 			if( Mouse.isButtonDown(2) ){
 				val x = (Mouse.getX -  width*0.5) / (tileSize*Foreground.tileScale)
 				val y = (Mouse.getY - height*0.5) / (tileSize*Foreground.tileScale)
 				posX += x * 0.1
 				posY += y * 0.1
 			}
+			*/
+			
+			Physics.update
 			
 			Background.drawRect(posX,posY,offsetX,offsetY)
 			DirectBackground.drawRect(posX,posY,offsetX,offsetY)
 			Foreground.drawRect(posX,posY,offsetX,offsetY)
+			Player.draw(posX,posY)
+			
+			val white = new org.jbox2d.common.Color3f(1,1,1)
+			Physics.debugDrawer.drawPolygon(currentOutline,currentOutline.length, white)
+			Physics.debugDrawer.draw
+			
+			Physics.draw
+			
+			Player.animation.draw
 			
 			Display.swapBuffers()
 		}

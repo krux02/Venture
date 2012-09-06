@@ -1,9 +1,21 @@
-package object noise {
+import org.lwjgl.BufferUtils
+package object util {
 	
 	@inline def fastfloor(x:Double) = x.floor.toInt
 	def fade(t:Double) = t * t * t * (t * (t * 6 - 15) + 10)
 	def hash(k:Int) = ((((k*34)+1)*k)%289+289)%289
 	def lerp(t:Double, a:Double, b:Double) = a + t * (b - a)
+	
+	def bufferExtend(bufferData:java.nio.ByteBuffer, capacity:Int = 1) = {
+		if( bufferData.capacity < bufferData.position + capacity ){
+			val newCapacity = bufferData.capacity * (1+(capacity+bufferData.capacity-1)/bufferData.capacity)
+			val newBufferData = BufferUtils createByteBuffer newCapacity
+			newBufferData put bufferData
+			newBufferData
+		}
+		else
+			bufferData
+	}
 	
 	def noise3(x:Double, y:Double, z:Double):Double = {
 		def grad(hash:Int, x:Double, y:Double, z:Double) = {

@@ -20,27 +20,35 @@ class Texture(val id:Int, val target:Int = GL_TEXTURE_2D ) {
 }
 
 object Texture {
+	val tiles = tile(16,16,"simple.png")
+	val playerraster = getRaster("player.png")
+	val playerTexture = tile(0,0,16,32,2,2,false,playerraster)
+	
 	private def getRaster(filename:String):Raster = try{ 
 		ImageIO.read(new File("textures",filename)).getData 
-	} catch { 
+	} catch {
 		case x => 
 			println(new File("textures",filename))
 			throw x
 	}
 	
-	val tiles = tile(16,16,"simple.png")
-	
-	private def tile(w:Int,h:Int,filename:String) = {
+	private def tile(w:Int,h:Int,filename:String):Texture = {
 		val image = ImageIO.read(new File("textures",filename))
 		val data:Raster = image.getData()
+		val count    = (data.getHeight/h) * (data.getWidth()/w)
+		val rowlimit = data.getHeight/h
+		tile(0,0,w,h,25,rowlimit,true,data)
+	}
+	
+	private def tile(x:Int,y:Int,w:Int,h:Int,count:Int,rowlimit:Int,vertical:Boolean,data:Raster) = {
 		
 		val dataArray = new Array[Int](w*h*4)
-		val countX = data.getWidth()/w
-		val countY = data.getHeight()/h
-		
-		val newData = BufferUtils.createByteBuffer(w*h*countX*countY*4)
-		for(x <- 0 until countX; y <- 0 until countY) {
-			data.getPixels(x*w, y*h, w, h, dataArray)
+		val newData = BufferUtils.createByteBuffer(w*h*count*4)
+		for(i <- 0 until count) {
+			val ix = x + (if(vertical) i/rowlimit else i%rowlimit)
+			val iy = y + (if(vertical) i%rowlimit else i/rowlimit)
+			
+			data.getPixels(ix*w, iy*h, w, h, dataArray)
 			for(i <- 0 until w*h) {
 				newData put dataArray(i*4+3).toByte
 				newData put dataArray(i*4+2).toByte
@@ -57,7 +65,7 @@ object Texture {
 		glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S,GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_T,GL_REPEAT);
-		glTexImage3D(GL_TEXTURE_2D_ARRAY,0,4,w,h,countX*countY,0,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8,newData);
+		glTexImage3D(GL_TEXTURE_2D_ARRAY,0,4,w,h,count,0,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8,newData);
 		
 		new Texture(id = texture, target = GL_TEXTURE_2D_ARRAY)
 	}
