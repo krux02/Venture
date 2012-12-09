@@ -10,7 +10,6 @@ import org.lwjgl.opengl.GL30._
 import org.lwjgl.opengl.GL31._
 import org.lwjgl.opengl.GL32._
 import org.lwjgl.opengl.GL33._
-import simplex3d.math.double._
 import org.lwjgl.BufferUtils
 
 object AnimationShader {
@@ -111,6 +110,20 @@ object Player {
 	val animation = new Animation(Texture.playerTexture, 2)
 	
 	var posX,posY = 0.0
+	var dX,dY = 0.0
+	
+	var onGround = false;
+	var groundSpeed = 0.0
+	
+	def update{
+		posX = posX + dX
+		posY = posY + dY
+		
+		dY -= 0.02;
+		
+		dX *= 0.95;
+		dY *= 0.95
+	}
 	
 	def draw(offsetX:Double, offsetY:Double) {
 		animation.draw(posX-offsetX,posY-offsetY,0)

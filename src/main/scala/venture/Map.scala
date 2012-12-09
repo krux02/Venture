@@ -13,7 +13,6 @@ import org.lwjgl.opengl.GL33._
 import MapSettings._
 import scala.util.Random
 import scala.collection.mutable.HashMap
-import simplex3d.math.Vec2i
 import scala.collection.mutable.ArrayBuilder
 
 object MapSettings{
@@ -84,6 +83,49 @@ class Map(val tileScale:Int, val fade:Double, val generator:Generator) {
 	
 	def get(x:Int,y:Int) = {
 		hashMap.getOrElseUpdate((x,y),generator(x,y))
+	}
+	
+	def raytrace(startX:Double, startY:Double, dirX:Double, dirY:Double) = {
+		var posX = startX.floor.toInt
+		var posY = startY.floor.toInt
+		
+		var stepX,stepY = 0
+		var tMaxX = 0.0
+		var tMaxY = 0.0
+		
+		stepX = if( dirX > 0 ) 1 else -1
+		if(stepX == 1)
+			tMaxX = (startX.ceil-startX)/dirX.abs
+		else
+			tMaxX = (startX-startX.floor)/dirX.abs
+		
+		
+		stepY = if( dirY > 0 ) 1 else -1
+		if(stepX == 1)
+			tMaxY = (startY.ceil-startY)/dirY.abs
+		else
+			tMaxY = (startY-startY.floor)/dirY.abs
+		
+		val tDeltaX = (1/dirX).abs
+		val tDeltaY = (1/dirY).abs
+		
+		var current = get(posX,posY)
+		var i = 0;
+		while( current == 0 && i < 20 ){
+			if(tMaxX < tMaxY){
+				posX += stepX
+				tMaxY += tDeltaX
+			}
+			else {
+				posY += stepY
+				tMaxY += tDeltaY
+			}
+			current = get(posX,posY)
+		}
+		if( current == 0 )
+			None
+		else
+			Some( (posX,posY,current) )
 	}
 	
 	def drawRect(centerX:Double, centerY:Double, halfWidth:Double, halfHeight:Double) = {

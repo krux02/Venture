@@ -13,7 +13,6 @@ import org.lwjgl.opengl.GL33._
 import org.lwjgl.opengl.Display
 import org.lwjgl.opengl.DisplayMode
 import org.lwjgl.input.Keyboard
-import simplex3d.math.double._
 import java.nio.ByteBuffer
 import org.lwjgl.util.glu.GLU
 import Tools._
@@ -21,7 +20,10 @@ import org.lwjgl.BufferUtils
 import scala.util.Random
 import org.lwjgl.input.Mouse
 import MapSettings._
-import simplex3d.math.Vec2i
+
+case class Vec2i(x:Int,y:Int)
+case class Vec2(x:Double,y:Double)
+case class Vec4(x:Double,y:Double,z:Double,w:Double)
 
 object Tools {
 	def buffer(vertices: Vec4*) = {
@@ -179,7 +181,7 @@ object LwjglApp {
 			}
 			*/
 			
-			Physics.update
+			//Physics.update
 			
 			Background.drawRect(posX,posY,offsetX,offsetY)
 			DirectBackground.drawRect(posX,posY,offsetX,offsetY)
@@ -187,11 +189,14 @@ object LwjglApp {
 			Player.draw(posX,posY)
 			
 			val white = new org.jbox2d.common.Color3f(1,1,1)
+			/*
 			Physics.debugDrawer.drawPolygon(currentOutline,currentOutline.length, white)
 			Physics.debugDrawer.draw
 			
 			Physics.draw
+			*/
 			
+			Player.update
 			Player.animation.draw
 			
 			Display.swapBuffers()

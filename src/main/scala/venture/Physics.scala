@@ -1,5 +1,6 @@
 package venture
 
+import org.jbox2d.{common => b2}
 import org.jbox2d.dynamics._
 import org.jbox2d.collision._
 import org.jbox2d.collision.shapes._
@@ -82,7 +83,7 @@ class GlDebugDraw(vptf:IViewportTransform) extends DebugDraw(vptf) {
 		circleBuffer(4*i+3) = math.sin((20.0*i+20).toRadians).toFloat
 	}
 	
-	def drawPoint( argPoint:Vec2, argRadiusOnScreen:Float, argColor:Color3f){
+	def drawPoint( argPoint:b2.Vec2, argRadiusOnScreen:Float, argColor:Color3f){
 		pointBuffer = util.bufferExtend(pointBuffer)
 		
 		pointBuffer putFloat argPoint.x
@@ -97,11 +98,11 @@ class GlDebugDraw(vptf:IViewportTransform) extends DebugDraw(vptf) {
 	}
 	
 	
-	def drawSolidPolygon(vertices:Array[Vec2], vertexCount:Int, color:Color3f){
+	def drawSolidPolygon(vertices:Array[b2.Vec2], vertexCount:Int, color:Color3f){
 		drawPolygon(vertices,vertexCount,color)
 	}
 	
-	def drawCircle(center:Vec2, radius:Float, color:Color3f) {
+	def drawCircle(center:b2.Vec2, radius:Float, color:Color3f) {
 		
 		val offsetX = center.x
 		val offsetY = center.y
@@ -126,11 +127,11 @@ class GlDebugDraw(vptf:IViewportTransform) extends DebugDraw(vptf) {
 		lineCounter += circleBuffer.length/2
 	}
 	
-	def drawSolidCircle(center:Vec2, radius:Float, axis:Vec2, color:Color3f){
+	def drawSolidCircle(center:b2.Vec2, radius:Float, axis:b2.Vec2, color:Color3f){
 		drawCircle(center,radius,color)
 	}
 	
-	def drawSegment(p1:Vec2, p2:Vec2, color:Color3f) {
+	def drawSegment(p1:b2.Vec2, p2:b2.Vec2, color:Color3f) {
 		lineBuffer = util.bufferExtend(lineBuffer)
 		
 		lineBuffer putFloat p1.x
@@ -197,7 +198,7 @@ object Physics {
 	environment.lowerBound.set(-100.0f, -100.0f);
 	environment.upperBound.set( 100.0f,  100.0f);
 	
-	val gravity = new Vec2(0.0f,-10.0f)
+	val gravity = new b2.Vec2(0.0f,-10.0f)
 	val doSleep = true;
 	
 	val world = new World(gravity, doSleep)
@@ -219,7 +220,7 @@ object Physics {
 	val velocityIterations = 6
 	val positionIterations = 2
 	
-	def addGroundPolygon(vertices:Array[Vec2], pos:Vec2){
+	def addGroundPolygon(vertices:Array[b2.Vec2], pos:b2.Vec2){
 		val groundBodyDef = new BodyDef
 		groundBodyDef.position.set(pos)
 		val groundBody = world.createBody(groundBodyDef);
