@@ -3,7 +3,7 @@ package venture
 import javax.imageio.ImageIO
 import java.io.File
 import org.lwjgl.opengl.GL11.{glGetInteger => _, _}
-import org.lwjgl.opengl.GL12.{GL_BGRA => _, _}
+import org.lwjgl.opengl.GL12._
 import org.lwjgl.opengl.GL13._
 import org.lwjgl.opengl.GL15._
 import org.lwjgl.opengl.GL20._

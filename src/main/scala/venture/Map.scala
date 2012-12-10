@@ -211,7 +211,7 @@ class Chunk {
 		
 		glUniform1i(ChunkShader.arrayTextureLoc, 0);
 		glUniform2f(ChunkShader.offsetLoc, posX.toFloat, posY.toFloat)
-		glUniform2f(ChunkShader.scaleLoc, tileSize * tileScale * 2.0f / LwjglApp.width , tileSize * tileScale * 2.0f / LwjglApp.height)
+		glUniform2f(ChunkShader.scaleLoc, tileSize * tileScale * 2.0f / Main.app.width , tileSize * tileScale * 2.0f / Main.app.height)
 		glUniform1f(ChunkShader.fadeLoc, fade.toFloat)
 		
 		glDrawArrays(GL_POINTS, 0, chunkSize*chunkSize);

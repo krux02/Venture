@@ -94,7 +94,7 @@ class Animation(texture:Texture, animationsteps:Int) {
 		glUniform1i(AnimationShader.arrayTextureLoc, 1);
 		glUniform2f(AnimationShader.offsetLoc, 0, 0)
 		val f = MapSettings.tileSize * Foreground.tileScale * 2.0f
-		glUniform2f(AnimationShader.scaleLoc, f / LwjglApp.width , f / LwjglApp.height)
+		glUniform2f(AnimationShader.scaleLoc, f / Main.app.width , f / Main.app.height)
 		glUniform1f(AnimationShader.fadeLoc, 1.0f )
 		
 		glDrawArrays(GL_POINTS, 0, counter)

@@ -20,12 +20,14 @@ import org.lwjgl.BufferUtils
 import scala.util.Random
 import org.lwjgl.input.Mouse
 import MapSettings._
+import com.badlogic.gdx
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.ApplicationListener
 
-case class Vec2i(x:Int,y:Int)
-case class Vec2(x:Double,y:Double)
-case class Vec4(x:Double,y:Double,z:Double,w:Double)
+import com.badlogic.gdx.math.{Vector2, Vector3}
 
 object Tools {
+	/*
 	def buffer(vertices: Vec4*) = {
 		val b = ByteBuffer.allocateDirect(vertices.size*4*4).order(java.nio.ByteOrder.nativeOrder()).asFloatBuffer()
 		for( v <- vertices ) {
@@ -37,7 +39,7 @@ object Tools {
 		b.flip()
 		b
 	}
-	
+	*/
 	def error{
 		val err = glGetError()
 		if( err != GL_NO_ERROR )
@@ -45,23 +47,23 @@ object Tools {
 	}
 }
 
-object LwjglApp { 
-	var running = true;
-	
-	val width  = 1024+512
-	val height = 1024
-	
-	var posX,posY = 0.0
-	
-	def mouseWordPos = {
-		val x = posX + (Mouse.getX -  width*0.5) / (tileSize * Foreground.tileScale)
-		val y = posY + (Mouse.getY - height*0.5) / (tileSize * Foreground.tileScale)
-		Vec2(x,y)
+object Main extends App{
+	val preferences = new com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration{
+		useGL20 = true;
+		title = "tiling prototype"
+		resizable = true
+		width = 640
+		height = 480
 	}
 	
-	var currentOutline = Array[org.jbox2d.common.Vec2]()
+	val app     = new LwjglApp
+	val backend = new gdx.backends.lwjgl.LwjglApplication(app, preferences)
+}
+
+class LwjglApp extends ApplicationListener {
 	
-	def main(args: Array[String]){
+	override def create {
+		println("create")
 		Display.setDisplayMode(new DisplayMode(width,height))
 		Display.setVSyncEnabled(true)
 		Display.create
@@ -75,12 +77,23 @@ object LwjglApp {
 		Texture.tiles.bind
 		glActiveTexture(GL_TEXTURE1)
 		Texture.playerTexture.bind
-		
-		var current:Short = 0;
-		val sb = new StringBuilder
-		
-		while(running) {
-			Display.update
+	}
+	
+	var width  = 640
+	var height = 480
+	
+	override def resize (width: Int, height:Int){
+		println("rezize")
+		this.width = width
+		this.height = height
+	}
+	
+	
+	val sb = new StringBuilder
+	var current:Short = 0;
+	/** Called when the {@link Application} should render itself. */
+	override def render {
+		Display.update
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			
 			if(Display.isCloseRequested || Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
@@ -94,7 +107,7 @@ object LwjglApp {
 			val offsetY = (height*0.5 / tileSize)
 
 			import Keyboard._
-			val move = if( isKeyDown(KEY_LCONTROL) || isKeyDown(KEY_RCONTROL) ) 1 else 0.25
+			val move = if( isKeyDown(KEY_LCONTROL) || isKeyDown(KEY_RCONTROL) ) 1 else 0.25f
 			
 			if( isKeyDown(KEY_I) )
 				posX -= move
@@ -200,8 +213,35 @@ object LwjglApp {
 			Player.animation.draw
 			
 			Display.swapBuffers()
-		}
-		
+	}
+
+	/** Called when the {@link Application} is paused. An Application is paused before it is destroyed, when a user pressed the Home
+	 * button on Android or an incoming call happend. On the desktop this will only be called immediately before {@link #dispose()}
+	 * is called. */
+	override def pause {
+		println("pause")
+	}
+
+	/** Called when the {@link Application} is resumed from a paused state. On Android this happens when the activity gets focus
+	 * again. On the desktop this method will never be called. */
+	override def resume {
+		println("resume")
+	}
+
+	/** Called when the {@link Application} is destroyed. Preceded by a call to {@link #pause()}. */
+	override def dispose {
+		println("dispose")
 		Display.destroy
 	}
+	
+	var running = true;
+	var posX,posY = 0.0f
+	
+	def mouseWordPos = {
+		val x = posX + (Mouse.getX -  width*0.5f) / (tileSize * Foreground.tileScale)
+		val y = posY + (Mouse.getY - height*0.5f) / (tileSize * Foreground.tileScale)
+		new Vector2(x,y)
+	}
+	
+	var currentOutline = Array[org.jbox2d.common.Vec2]()
 }

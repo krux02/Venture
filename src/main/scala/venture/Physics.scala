@@ -175,9 +175,9 @@ class GlDebugDraw(vptf:IViewportTransform) extends DebugDraw(vptf) {
 		glVertexAttribPointer(DebugDrawShader.colorLoc, 4, GL_UNSIGNED_BYTE, false, 12, 8);
 		
 		
-		glUniform2f( DebugDrawShader.offsetLoc, -LwjglApp.posX.toFloat, -LwjglApp.posY.toFloat)
+		glUniform2f( DebugDrawShader.offsetLoc, -Main.app.posX.toFloat, -Main.app.posY.toFloat)
 		val f = MapSettings.tileSize * Foreground.tileScale * 2.0f
-		glUniform2f(DebugDrawShader.scaleLoc, f / LwjglApp.width , f / LwjglApp.height)
+		glUniform2f(DebugDrawShader.scaleLoc, f / Main.app.width , f / Main.app.height)
 		
 		glDrawArrays(GL_POINTS,0,pointCounter)
 		glBufferData(GL_ARRAY_BUFFER, lineBuffer, GL_STATIC_DRAW)
