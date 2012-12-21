@@ -1,18 +1,7 @@
 package venture
 
-import org.lwjgl.opengl.GL11.{glGetInteger => _, _}
-import org.lwjgl.opengl.GL12._
-import org.lwjgl.opengl.GL13._
-import org.lwjgl.opengl.GL15._
-import org.lwjgl.opengl.GL20._
-import org.lwjgl.opengl.GL21._
-import org.lwjgl.opengl.GL30._
-import org.lwjgl.opengl.GL31._
-import org.lwjgl.opengl.GL32._
-import org.lwjgl.opengl.GL33._
 import org.lwjgl.opengl.Display
 import org.lwjgl.input.Keyboard
-import org.lwjgl.util.glu.GLU
 import MapSettings._
 import com.badlogic.gdx
 import com.badlogic.gdx.Gdx
@@ -21,14 +10,6 @@ import etc.EmptyInputProcessor
 import gdx.Input.Keys._
 import gdx.math.Vector2
 import rendering.Camera
-
-object Tools {
-	def error() {
-		val err = glGetError()
-		if( err != GL_NO_ERROR )
-			println(GLU.gluErrorString(err))
-	}
-}
 
 object Main extends App{
 	val preferences = new gdx.backends.lwjgl.LwjglApplicationConfiguration{
@@ -40,27 +21,21 @@ object Main extends App{
 		vSyncEnabled = true
 	}
 	
-	val app     = new LwjglApp
+	val app     = new Game
 	val backend = new gdx.backends.lwjgl.LwjglApplication(app, preferences)
 }
 
-class LwjglApp extends ApplicationListener {
+class Game extends ApplicationListener {
 	
 	override def create() {
-		glEnable(GL_POINT_SPRITE)
-		glEnable(GL_BLEND)
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA)
-		
-		glActiveTexture(GL_TEXTURE0)
-		Texture.tiles.bind
-		glActiveTexture(GL_TEXTURE1)
-		Texture.playerTexture.bind
-		
 		Gdx.input.setInputProcessor(inputProcessor)
 	}
 	
 	override def resize (width: Int, height:Int) {
 		println("rezize")
+
+    val f = 1.0f / MapSettings.tileSize.toFloat
+    Camera.setToOrtho(false,width*f,height*f)
 	}
 	
 	def width:Float = Gdx.graphics.getWidth
@@ -128,11 +103,10 @@ class LwjglApp extends ApplicationListener {
 						Foreground(tileX, tileY) = current.toShort
 				case 1 => current = Foreground(tileX,tileY)
 				case 2 => 
-					currentOutline = Foreground.outlineAt(tileX, tileY).grouped(2).map{case Array(x,y) => new Vector2(x,y)}.toArray
+					currentOutline = Foreground.outlineAt(tileX, tileY).grouped(2).map{case Array(x, y) => new Vector2(x,y)}.toArray
 					print("outline vertices: ")
 					println(currentOutline.length)
 					println(currentOutline.mkString)
-					//Physics.addGroundPolygon(currentOutline,new org.jbox2d.common.Vec2(0,0))
 				case _ => return false
 			}
 			
@@ -141,14 +115,9 @@ class LwjglApp extends ApplicationListener {
 	}
 	
 	override def render() {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 		
 		if(Display.isCloseRequested || Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
 			Gdx.app.exit()
-		
-		val offsetX = (width*0.5f / tileSize)
-		val offsetY = (height*0.5f / tileSize)
-
 
     import gdx.Input.Keys
 
@@ -163,6 +132,8 @@ class LwjglApp extends ApplicationListener {
 		if( Gdx.input.isKeyPressed(Keys.L) )
 			Camera.position.y += move
 
+    Camera.update()
+
     if( Gdx.input.isKeyPressed(Keys.N) )
       Player.posX -= move
     if( Gdx.input.isKeyPressed(Keys.T) )
@@ -171,6 +142,8 @@ class LwjglApp extends ApplicationListener {
       Player.posY -= move
     if( Gdx.input.isKeyPressed(Keys.G) )
       Player.posY += move
+
+    Player.update
 
 		/*
 		if( Mouse.isButtonDown(2) ) {
@@ -183,20 +156,7 @@ class LwjglApp extends ApplicationListener {
 		
 		//Physics.update
 		
-		Background.drawRect(Camera.position.x,Camera.position.y,offsetX,offsetY)
-		DirectBackground.drawRect(Camera.position.x,Camera.position.y,offsetX,offsetY)
-		Foreground.drawRect(Camera.position.x,Camera.position.y,offsetX,offsetY)
-		Player.draw(Camera.position.x,Camera.position.y)
-
-		/*
-		Physics.debugDrawer.drawPolygon(currentOutline,currentOutline.length, white)
-		Physics.debugDrawer.draw
-		
-		Physics.draw
-		*/
-		
-		Player.update
-		Player.animation.draw
+		rendering.LwjglRenderer.render()
 		
 		Display.swapBuffers()
 	}

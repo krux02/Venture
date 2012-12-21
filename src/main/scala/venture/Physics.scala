@@ -33,8 +33,8 @@ object Physics {
 	def addGroundPolygon(vertices:Array[Vector2], pos:Vector2){
 		val groundBodyDef = new BodyDef
 		groundBodyDef.position.set(pos)
-		val groundBody = world.createBody(groundBodyDef);
-		val groundBox = new PolygonShape();
+		val groundBody = world.createBody(groundBodyDef)
+		val groundBox = new PolygonShape()
     groundBox.set(vertices)
 		groundBody.createFixture(groundBox, 0)
 	}
@@ -42,13 +42,4 @@ object Physics {
 	def update() {
 		world.step(timeStep, velocityIterations, positionIterations)
 	}
-	
-	def debugDraw() {
-    matrix.setToTranslation(Camera.position.x,Camera.position.y,0)
-    debugDrawer.render(world, matrix)
-	}
-
-  val matrix = new Matrix4()
-	val debugDrawer = new com.badlogic.gdx.physics.box2d.Box2DDebugRenderer()
-	//debugDrawer.setFlags(DebugDraw.e_shapeBit /*| DebugDraw.e_aabbBit*/)
 }

@@ -1,6 +1,6 @@
 import org.lwjgl.BufferUtils
 
-package object util {
+package object noise {
 	
 	@inline def fastfloor(x:Double) = x.floor.toInt
 	def fade(t:Double) = t * t * t * (t * (t * 6 - 15) + 10)

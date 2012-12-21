@@ -1,4 +1,4 @@
-package venture
+package rendering
 
 import org.lwjgl.opengl.GL11.{glGetInteger => _, _}
 import org.lwjgl.opengl.GL12._
@@ -15,15 +15,15 @@ import org.lwjgl.opengl.GL20
 
 object Shader {
 	def createShader(eShaderType:Int, strShaderFile:String) = {
-	    val shader = glCreateShader(eShaderType);
-	    glShaderSource(shader, strShaderFile);
-	    glCompileShader(shader);
+	    val shader = glCreateShader(eShaderType)
+	    glShaderSource(shader, strShaderFile)
+	    glCompileShader(shader)
 
 	    
-	    val status = GL20.glGetShader(shader, GL_COMPILE_STATUS);
+	    val status = GL20.glGetShaderi(shader, GL_COMPILE_STATUS)
 	    if (status == GL_FALSE)
 	    {
-	        val infoLogLength = GL20.glGetShader(shader, GL_INFO_LOG_LENGTH)
+	        val infoLogLength = GL20.glGetShaderi(shader, GL_INFO_LOG_LENGTH)
 	        val strInfoLog = glGetShaderInfoLog(shader, infoLogLength)
 	        val strShaderType = eShaderType match {
 		        case GL_VERTEX_SHADER   => "vertex"
@@ -31,31 +31,31 @@ object Shader {
 		        case GL_FRAGMENT_SHADER => "fragment"
 	        }
 	        
-	        printf("Compile failure in %s shader:\n%s\n", strShaderType, strInfoLog);
+	        printf("Compile failure in %s shader:\n%s\n", strShaderType, strInfoLog)
 	    }
 	
 		shader
 	}
 	
 	def createProgram(shaderList: Seq[Int]) = {
-	    val program = glCreateProgram();
+	    val program = glCreateProgram()
 	    
 	    for(shader <- shaderList)
-	    	glAttachShader(program, shader);
+	    	glAttachShader(program, shader)
 	    
-	    glLinkProgram(program);
+	    glLinkProgram(program)
 	    
 	    
-	    val status = GL20.glGetProgram(program, GL_LINK_STATUS);
+	    val status = GL20.glGetProgrami(program, GL_LINK_STATUS)
 	    if (status == GL_FALSE)
 	    {
-	        val infoLogLength = GL20.glGetProgram(program, GL_INFO_LOG_LENGTH);
-	        val strInfoLog = glGetProgramInfoLog(program, infoLogLength);
-	        printf("Linker failure: %s\n", strInfoLog);
+	        val infoLogLength = GL20.glGetProgrami(program, GL_INFO_LOG_LENGTH)
+	        val strInfoLog = glGetProgramInfoLog(program, infoLogLength)
+	        printf("Linker failure: %s\n", strInfoLog)
 	    }
 	    
 	    for(shader <- shaderList)
-	        glDetachShader(program, shader);
+	        glDetachShader(program, shader)
 	
 	    program
 	}

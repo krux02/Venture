@@ -1,4 +1,4 @@
-package venture
+package rendering
 
 import javax.imageio.ImageIO
 import java.io.File
@@ -16,37 +16,37 @@ import org.lwjgl.opengl.GL32._
 import org.lwjgl.opengl.GL33._
 
 class Texture(val id:Int, val target:Int = GL_TEXTURE_2D ) {
-	def bind = glBindTexture(target, id)
+	def bind() = glBindTexture(target, id)
 }
 
 object Texture {
 	val tiles = tile(16,16,"simple.png")
 	val playerraster = getRaster("player.png")
-	val playerTexture = tile(0,0,16,32,2,2,false,playerraster)
+	val playerTexture = tile(0,0,16,32,2,2,vertical = false, data = playerraster)
 	
 	private def getRaster(filename:String):Raster = try{ 
 		ImageIO.read(new File("textures",filename)).getData 
 	} catch {
-		case x => 
+		case x:Any =>
 			println(new File("textures",filename))
 			throw x
 	}
 	
 	private def tile(w:Int,h:Int,filename:String):Texture = {
 		val image = ImageIO.read(new File("textures",filename))
-		val data:Raster = image.getData()
-		val count    = (data.getHeight/h) * (data.getWidth()/w)
-		val rowlimit = data.getHeight/h
-		tile(0,0,w,h,25,rowlimit,true,data)
+		val data:Raster = image.getData
+		val count    = (data.getHeight/h) * (data.getWidth/w)
+		val rowLimit = data.getHeight/h
+		tile(0,0,w,h,25,rowLimit,vertical = true, data = data)
 	}
 	
-	private def tile(x:Int,y:Int,w:Int,h:Int,count:Int,rowlimit:Int,vertical:Boolean,data:Raster) = {
+	private def tile(x:Int,y:Int,w:Int,h:Int,count:Int,rowLimit:Int,vertical:Boolean,data:Raster) = {
 		
 		val dataArray = new Array[Int](w*h*4)
 		val newData = BufferUtils.createByteBuffer(w*h*count*4)
 		for(i <- 0 until count) {
-			val ix = x + (if(vertical) i/rowlimit else i%rowlimit)
-			val iy = y + (if(vertical) i%rowlimit else i/rowlimit)
+			val ix = x + (if(vertical) i/rowLimit else i%rowLimit)
+			val iy = y + (if(vertical) i%rowLimit else i/rowLimit)
 			
 			data.getPixels(ix*w, iy*h, w, h, dataArray)
 			for(i <- 0 until w*h) {
@@ -71,8 +71,8 @@ object Texture {
 	}
 	private def loadImage(filename:String):Texture = loadImage(getRaster(filename))
 	private def loadImage(raster:Raster):Texture = {
-		val width = raster.getWidth()
-		val height = raster.getHeight()
+		val width = raster.getWidth
+		val height = raster.getHeight
 		assert( ((width-1) & width) == 0)
 		assert( ((height-1) & height) == 0)
 		
@@ -105,9 +105,9 @@ object Texture {
 	}
 	
 	private def loadSkyBox(filename:String):Texture = {
-		val raster = ImageIO.read(new File("textures",filename)).getData()
-		val dataWidth = raster.getWidth()
-		val dataHeight = raster.getHeight()
+		val raster = ImageIO.read(new File("textures",filename)).getData
+		val dataWidth = raster.getWidth
+		val dataHeight = raster.getHeight
 		
 		val width = dataWidth/4
 		val height = dataHeight/2
@@ -137,19 +137,19 @@ object Texture {
 		}
 		
 		val textureID = glGenTextures
-		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID)
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE)
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
 		//Define all 6 faces
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(0) );
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(1) );
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(2) );
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(3) );
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(4) );
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(5) );
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(0) )
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(1) )
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(2) )
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(3) )
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(4) )
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(5) )
 		
 		new Texture(id = textureID, target = GL_TEXTURE_CUBE_MAP)
 	}

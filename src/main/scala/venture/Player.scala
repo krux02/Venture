@@ -45,28 +45,28 @@ void main()
     outputColor = vec4(vec3(u_fade),1) * texture(u_arrayTexture, vec3(gl_PointCoord, v_tileID ));
 }
 """
-	import Shader.{createProgram, createShader}
+	import rendering.Shader.{createProgram, createShader}
 	
 	val shaderList = List(createShader(GL_VERTEX_SHADER, vertexShaderSrc), createShader(GL_FRAGMENT_SHADER, fragmentShaderSrc))
-    val theProgram = createProgram(shaderList);
+    val theProgram = createProgram(shaderList)
 	shaderList foreach glDeleteShader
 	
-	val arrayTextureLoc = glGetUniformLocation(theProgram, "u_arrayTexture");
-	val offsetLoc       = glGetUniformLocation(theProgram, "u_offset");
-	val scaleLoc        = glGetUniformLocation(theProgram, "u_scale");
-	val fadeLoc         = glGetUniformLocation(theProgram, "u_fade");
-	val tileIdLoc       = glGetAttribLocation(theProgram, "in_tileID");
-	val positionLoc     = glGetAttribLocation(theProgram, "in_position");
+	val arrayTextureLoc = glGetUniformLocation(theProgram, "u_arrayTexture")
+	val offsetLoc       = glGetUniformLocation(theProgram, "u_offset")
+	val scaleLoc        = glGetUniformLocation(theProgram, "u_scale")
+	val fadeLoc         = glGetUniformLocation(theProgram, "u_fade")
+	val tileIdLoc       = glGetAttribLocation(theProgram, "in_tileID")
+	val positionLoc     = glGetAttribLocation(theProgram, "in_position")
 	
 }
 
-class Animation(texture:Texture, animationsteps:Int) {
-	var bufferData = BufferUtils.createByteBuffer(2*4+1*2);
+class Animation(texture:rendering.Texture, animationsteps:Int) {
+	var bufferData = BufferUtils.createByteBuffer(2*4+1*2)
 	val buffer = glGenBuffers()
-	var counter = 0;
+	var counter = 0
 	
 	def draw(posX:Double, posY:Double, frame:Short) {
-		bufferData = util.bufferExtend(bufferData)
+		bufferData = noise.bufferExtend(bufferData)
 		
 		bufferData putFloat posX.toFloat
 		bufferData putFloat posY.toFloat
@@ -75,23 +75,23 @@ class Animation(texture:Texture, animationsteps:Int) {
 		counter += 1
 	}
 	
-	def draw {
+	def draw() {
 		bufferData.rewind()
-		glUseProgram(AnimationShader.theProgram);
+		glUseProgram(AnimationShader.theProgram)
 		
-		glBindBuffer(GL_ARRAY_BUFFER, buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, buffer)
 		glBufferData(GL_ARRAY_BUFFER, bufferData, GL_STATIC_DRAW)
 
 		glEnableVertexAttribArray(AnimationShader.tileIdLoc)
-		glVertexAttribIPointer(AnimationShader.tileIdLoc, 1, GL_SHORT, 2*4+1*2, 2*4);
+		glVertexAttribIPointer(AnimationShader.tileIdLoc, 1, GL_SHORT, 2*4+1*2, 2*4)
 		
-		glEnableVertexAttribArray(AnimationShader.positionLoc);
-		glVertexAttribPointer(AnimationShader.positionLoc, 2, GL_FLOAT, true, 2*4+1*2, 0);
+		glEnableVertexAttribArray(AnimationShader.positionLoc)
+		glVertexAttribPointer(AnimationShader.positionLoc, 2, GL_FLOAT, true, 2*4+1*2, 0)
 		
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0)
 		
 		
-		glUniform1i(AnimationShader.arrayTextureLoc, 1);
+		glUniform1i(AnimationShader.arrayTextureLoc, 1)
 		glUniform2f(AnimationShader.offsetLoc, 0, 0)
 		val f = MapSettings.tileSize * Foreground.tileScale * 2.0f
 		glUniform2f(AnimationShader.scaleLoc, f / Main.app.width , f / Main.app.height)
@@ -99,33 +99,30 @@ class Animation(texture:Texture, animationsteps:Int) {
 		
 		glDrawArrays(GL_POINTS, 0, counter)
 		
-		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(0)
 		
-		counter = 0;
-		glUseProgram(0);
+		counter = 0
+		glUseProgram(0)
 	}
 }
 
 object Player {
-	val animation = new Animation(Texture.playerTexture, 2)
+	val animation = new Animation(rendering.Texture.playerTexture, 2)
 	
 	var posX,posY = 0.0
 	var dX,dY = 0.0
 	
-	var onGround = false;
+	var onGround = false
 	var groundSpeed = 0.0
 	
-	def update{
+	def update() {
 		posX = posX + dX
 		posY = posY + dY
 		
-		dY -= 0.02;
+		dY -= 0.02
 		
-		dX *= 0.95;
+		dX *= 0.95
 		dY *= 0.95
 	}
-	
-	def draw(offsetX:Double, offsetY:Double) {
-		animation.draw(posX-offsetX,posY-offsetY,0)
-	}
+
 }
