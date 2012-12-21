@@ -1,4 +1,5 @@
 import org.lwjgl.BufferUtils
+
 package object util {
 	
 	@inline def fastfloor(x:Double) = x.floor.toInt

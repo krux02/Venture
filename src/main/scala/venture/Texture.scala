@@ -2,6 +2,8 @@ package venture
 
 import javax.imageio.ImageIO
 import java.io.File
+import java.awt.image.Raster
+import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11.{glGetInteger => _, _}
 import org.lwjgl.opengl.GL12._
 import org.lwjgl.opengl.GL13._
@@ -12,8 +14,6 @@ import org.lwjgl.opengl.GL30._
 import org.lwjgl.opengl.GL31._
 import org.lwjgl.opengl.GL32._
 import org.lwjgl.opengl.GL33._
-import java.awt.image.Raster
-import org.lwjgl.BufferUtils
 
 class Texture(val id:Int, val target:Int = GL_TEXTURE_2D ) {
 	def bind = glBindTexture(target, id)
@@ -57,7 +57,7 @@ object Texture {
 			}
 		}
 		newData.flip
-		
+
 		val texture = glGenTextures()
 		assert(texture != 0)
 		glBindTexture(GL_TEXTURE_2D_ARRAY, texture)
@@ -144,12 +144,12 @@ object Texture {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
 		//Define all 6 faces
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, allData(0) );
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, allData(1) );
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, allData(2) );
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, allData(3) );
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, allData(4) );
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, allData(5) );
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(0) );
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(1) );
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(2) );
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(3) );
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(4) );
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, allData(5) );
 		
 		new Texture(id = textureID, target = GL_TEXTURE_CUBE_MAP)
 	}

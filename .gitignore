@@ -16,3 +16,8 @@ project/plugins/project/
 .cache
 .classpath
 .project
+
+# Idea-IDE specific
+.idea
+.idea_modules
+*.iml

@@ -11,36 +11,19 @@ import org.lwjgl.opengl.GL31._
 import org.lwjgl.opengl.GL32._
 import org.lwjgl.opengl.GL33._
 import org.lwjgl.opengl.Display
-import org.lwjgl.opengl.DisplayMode
 import org.lwjgl.input.Keyboard
-import java.nio.ByteBuffer
 import org.lwjgl.util.glu.GLU
-import Tools._
-import org.lwjgl.BufferUtils
-import scala.util.Random
-import org.lwjgl.input.Mouse
 import MapSettings._
 import com.badlogic.gdx
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.ApplicationListener
-
-import com.badlogic.gdx.math.{Vector2, Vector3}
+import etc.EmptyInputProcessor
+import gdx.Input.Keys._
+import gdx.math.Vector2
+import rendering.Camera
 
 object Tools {
-	/*
-	def buffer(vertices: Vec4*) = {
-		val b = ByteBuffer.allocateDirect(vertices.size*4*4).order(java.nio.ByteOrder.nativeOrder()).asFloatBuffer()
-		for( v <- vertices ) {
-			b put v.x.toFloat
-			b put v.y.toFloat
-			b put v.z.toFloat
-			b put v.w.toFloat
-		}
-		b.flip()
-		b
-	}
-	*/
-	def error{
+	def error() {
 		val err = glGetError()
 		if( err != GL_NO_ERROR )
 			println(GLU.gluErrorString(err))
@@ -48,12 +31,13 @@ object Tools {
 }
 
 object Main extends App{
-	val preferences = new com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration{
-		useGL20 = true;
+	val preferences = new gdx.backends.lwjgl.LwjglApplicationConfiguration{
+		useGL20 = true
 		title = "tiling prototype"
 		resizable = true
 		width = 640
 		height = 480
+		vSyncEnabled = true
 	}
 	
 	val app     = new LwjglApp
@@ -62,14 +46,8 @@ object Main extends App{
 
 class LwjglApp extends ApplicationListener {
 	
-	override def create {
-		println("create")
-		Display.setDisplayMode(new DisplayMode(width,height))
-		Display.setVSyncEnabled(true)
-		Display.create
-		
+	override def create() {
 		glEnable(GL_POINT_SPRITE)
-		
 		glEnable(GL_BLEND)
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA)
 		
@@ -77,171 +55,170 @@ class LwjglApp extends ApplicationListener {
 		Texture.tiles.bind
 		glActiveTexture(GL_TEXTURE1)
 		Texture.playerTexture.bind
+		
+		Gdx.input.setInputProcessor(inputProcessor)
 	}
 	
-	var width  = 640
-	var height = 480
-	
-	override def resize (width: Int, height:Int){
+	override def resize (width: Int, height:Int) {
 		println("rezize")
-		this.width = width
-		this.height = height
 	}
 	
-	
+	def width:Float = Gdx.graphics.getWidth
+	def height:Float = Gdx.graphics.getHeight
+		
 	val sb = new StringBuilder
-	var current:Short = 0;
-	/** Called when the {@link Application} should render itself. */
-	override def render {
-		Display.update
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			
-			if(Display.isCloseRequested || Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
-				running = false
-				
-			val mousePos = mouseWordPos
-			val mouseX = mousePos.x.floor.toInt
-			val mouseY = mousePos.y.floor.toInt
-			
-			val offsetX = (width*0.5 / tileSize)
-			val offsetY = (height*0.5 / tileSize)
+	var current = 0
+	
+	val inputProcessor = new EmptyInputProcessor {
 
-			import Keyboard._
-			val move = if( isKeyDown(KEY_LCONTROL) || isKeyDown(KEY_RCONTROL) ) 1 else 0.25f
-			
-			if( isKeyDown(KEY_I) )
-				posX -= move
-			if( isKeyDown(KEY_E) )
-				posX += move
-			if( isKeyDown(KEY_A) )
-				posY -= move
-			if( isKeyDown(KEY_L) )
-				posY += move
-			
-			if( isKeyDown(KEY_N) )
-				Player.posX -= move
-			if( isKeyDown(KEY_T) )
-				Player.posX += move
-			if( isKeyDown(KEY_R) )
-				Player.posY -= move
-			if( isKeyDown(KEY_G) )
-				Player.posY += move
+    override def scrolled(amount:Int) = {
+			current += amount
+			true
+		}
+		
+		override def keyDown(keyCode: Int) = {
+			var b = true
+			keyCode match {
 				
-			// event Keyboard
-			while( Keyboard.next ) {
-				// eventKey 
-				val key = getEventKey
-				val state = getEventKeyState
-				
-				if( state ) {
-					key match {
-						case KEY_LMENU | KEY_RMENU => sb.clear()
-						case KEY_1 | KEY_NUMPAD1 => sb += '1'
-						case KEY_2 | KEY_NUMPAD2 => sb += '2'
-						case KEY_3 | KEY_NUMPAD3 => sb += '3'
-						case KEY_4 | KEY_NUMPAD4 => sb += '4'
-						case KEY_5 | KEY_NUMPAD5 => sb += '5'
-						case KEY_6 | KEY_NUMPAD6 => sb += '6'
-						case KEY_7 | KEY_NUMPAD7 => sb += '7'
-						case KEY_8 | KEY_NUMPAD8 => sb += '8'
-						case KEY_9 | KEY_NUMPAD9 => sb += '9'
-						case KEY_0 | KEY_NUMPAD0 => sb += '0'
-						case _     => 
+				case ALT_LEFT | ALT_RIGHT => sb.clear()
+				case NUM_1     => sb += '1'
+				case NUM_2     => sb += '2'
+				case NUM_3     => sb += '3'
+				case NUM_4     => sb += '4'
+				case NUM_5     => sb += '5'
+				case NUM_6     => sb += '6'
+				case NUM_7     => sb += '7'
+				case NUM_8     => sb += '8'
+				case NUM_9     => sb += '9'
+				case NUM_0     => sb += '0'
+				case _     =>
+					println(keyCode)
+					b = false  
+			}
+			b
+		}
+		
+		override def keyUp(keyCode: Int) = {
+			keyCode match {
+				case ALT_LEFT | ALT_RIGHT => 
+					if(!sb.isEmpty) {
+						try {
+							current = sb.result().toShort
+							println(current)
+						} catch {
+							case x:Exception => println(x.getMessage)
+						}
 					}
-				}
-				else {
-					key match {
-						case KEY_LMENU | KEY_RMENU => 
-							if(! sb.isEmpty)
-							try {
-								current = sb.result.toShort
-							} catch {
-								case x => println(x.getMessage)
-							}
-						case _ =>
-					}
-				}
+					true
+				case _ => 
+					false
+			}
+		}
+		
+		override def touchDown(x:Int, y:Int, pointer:Int, button:Int):Boolean = {
+			val (mouseX,mouseY) = mouseWordPos(x,y)
+			val tileX = mouseX.floor.toInt
+			val tileY = mouseY.floor.toInt
+			
+			button match {
+				case 0 =>
+					if( Gdx.input.isKeyPressed(gdx.Input.Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(gdx.Input.Keys.CONTROL_RIGHT) )
+						DirectBackground(tileX, tileY) = current.toShort
+					else
+						Foreground(tileX, tileY) = current.toShort
+				case 1 => current = Foreground(tileX,tileY)
+				case 2 => 
+					currentOutline = Foreground.outlineAt(tileX, tileY).grouped(2).map{case Array(x,y) => new Vector2(x,y)}.toArray
+					print("outline vertices: ")
+					println(currentOutline.length)
+					println(currentOutline.mkString)
+					//Physics.addGroundPolygon(currentOutline,new org.jbox2d.common.Vec2(0,0))
+				case _ => return false
 			}
 			
-			while( Mouse.next ) {
-				import Mouse._
-				if(getEventButtonState) {
-					getEventButton match {
-						case 0 => 
-							if( isKeyDown(KEY_LCONTROL) || isKeyDown(KEY_RCONTROL) )
-								DirectBackground(mouseX,mouseY) = current
-							else
-								Foreground(mouseX, mouseY) = current;
-						case 1 => current = Foreground(mouseX,mouseY)
-						case 2 => 
-							currentOutline = Foreground.outlineAt(mouseX,mouseY).grouped(2).map{case Array(x,y) => new org.jbox2d.common.Vec2(x,y)}.toArray
-							print("outline vertices: ")
-							println(currentOutline.length)
-							println(currentOutline.mkString)
-							//Physics.addGroundPolygon(currentOutline,new org.jbox2d.common.Vec2(0,0))
-						case _ => 
-					}
-				}	
-			}
-			current = (current + Mouse.getDWheel / 120).toShort
-			
-			/*
-			if( Mouse.isButtonDown(2) ){
-				val x = (Mouse.getX -  width*0.5) / (tileSize*Foreground.tileScale)
-				val y = (Mouse.getY - height*0.5) / (tileSize*Foreground.tileScale)
-				posX += x * 0.1
-				posY += y * 0.1
-			}
-			*/
-			
-			//Physics.update
-			
-			Background.drawRect(posX,posY,offsetX,offsetY)
-			DirectBackground.drawRect(posX,posY,offsetX,offsetY)
-			Foreground.drawRect(posX,posY,offsetX,offsetY)
-			Player.draw(posX,posY)
-			
-			val white = new org.jbox2d.common.Color3f(1,1,1)
-			/*
-			Physics.debugDrawer.drawPolygon(currentOutline,currentOutline.length, white)
-			Physics.debugDrawer.draw
-			
-			Physics.draw
-			*/
-			
-			Player.update
-			Player.animation.draw
-			
-			Display.swapBuffers()
+			true
+		}
 	}
+	
+	override def render() {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+		
+		if(Display.isCloseRequested || Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
+			Gdx.app.exit()
+		
+		val offsetX = (width*0.5f / tileSize)
+		val offsetY = (height*0.5f / tileSize)
 
-	/** Called when the {@link Application} is paused. An Application is paused before it is destroyed, when a user pressed the Home
-	 * button on Android or an incoming call happend. On the desktop this will only be called immediately before {@link #dispose()}
-	 * is called. */
-	override def pause {
+
+    import gdx.Input.Keys
+
+		val move = if( Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT) ) 1 else 0.25f
+		
+		if( Gdx.input.isKeyPressed(Keys.I) )
+			Camera.position.x -= move
+		if( Gdx.input.isKeyPressed(Keys.E) )
+			Camera.position.x += move
+		if( Gdx.input.isKeyPressed(Keys.A) )
+      Camera.position.y -= move
+		if( Gdx.input.isKeyPressed(Keys.L) )
+			Camera.position.y += move
+
+    if( Gdx.input.isKeyPressed(Keys.N) )
+      Player.posX -= move
+    if( Gdx.input.isKeyPressed(Keys.T) )
+      Player.posX += move
+    if( Gdx.input.isKeyPressed(Keys.R) )
+      Player.posY -= move
+    if( Gdx.input.isKeyPressed(Keys.G) )
+      Player.posY += move
+
+		/*
+		if( Mouse.isButtonDown(2) ) {
+			val x = (Mouse.getX -  width*0.5) / (tileSize*Foreground.tileScale)
+			val y = (Mouse.getY - height*0.5) / (tileSize*Foreground.tileScale)
+			posX += x * 0.1
+			posY += y * 0.1
+		}
+		*/
+		
+		//Physics.update
+		
+		Background.drawRect(Camera.position.x,Camera.position.y,offsetX,offsetY)
+		DirectBackground.drawRect(Camera.position.x,Camera.position.y,offsetX,offsetY)
+		Foreground.drawRect(Camera.position.x,Camera.position.y,offsetX,offsetY)
+		Player.draw(Camera.position.x,Camera.position.y)
+
+		/*
+		Physics.debugDrawer.drawPolygon(currentOutline,currentOutline.length, white)
+		Physics.debugDrawer.draw
+		
+		Physics.draw
+		*/
+		
+		Player.update
+		Player.animation.draw
+		
+		Display.swapBuffers()
+	}
+	
+	override def pause() {
 		println("pause")
 	}
-
-	/** Called when the {@link Application} is resumed from a paused state. On Android this happens when the activity gets focus
-	 * again. On the desktop this method will never be called. */
-	override def resume {
+	
+	override def resume() {
 		println("resume")
 	}
-
-	/** Called when the {@link Application} is destroyed. Preceded by a call to {@link #pause()}. */
-	override def dispose {
+	
+	override def dispose() {
 		println("dispose")
-		Display.destroy
+		Display.destroy()
 	}
 	
-	var running = true;
-	var posX,posY = 0.0f
-	
-	def mouseWordPos = {
-		val x = posX + (Mouse.getX -  width*0.5f) / (tileSize * Foreground.tileScale)
-		val y = posY + (Mouse.getY - height*0.5f) / (tileSize * Foreground.tileScale)
-		new Vector2(x,y)
+	def mouseWordPos(mouseX:Int, mouseY:Int) = {
+		val x = Camera.position.x + (mouseX -  width*0.5f) / (tileSize * Foreground.tileScale)
+		val y = Camera.position.y + (height*0.5f - mouseY) / (tileSize * Foreground.tileScale)
+		(x,y)
 	}
 	
-	var currentOutline = Array[org.jbox2d.common.Vec2]()
+	var currentOutline = Array[Vector2]()
 }

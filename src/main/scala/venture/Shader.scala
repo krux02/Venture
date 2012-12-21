@@ -10,17 +10,20 @@ import org.lwjgl.opengl.GL30._
 import org.lwjgl.opengl.GL31._
 import org.lwjgl.opengl.GL32._
 import org.lwjgl.opengl.GL33._
+import org.lwjgl.opengl.GL20
+
 
 object Shader {
 	def createShader(eShaderType:Int, strShaderFile:String) = {
 	    val shader = glCreateShader(eShaderType);
 	    glShaderSource(shader, strShaderFile);
 	    glCompileShader(shader);
+
 	    
-	    val status = glGetShader(shader, GL_COMPILE_STATUS);
+	    val status = GL20.glGetShader(shader, GL_COMPILE_STATUS);
 	    if (status == GL_FALSE)
 	    {
-	        val infoLogLength = glGetShader(shader, GL_INFO_LOG_LENGTH)
+	        val infoLogLength = GL20.glGetShader(shader, GL_INFO_LOG_LENGTH)
 	        val strInfoLog = glGetShaderInfoLog(shader, infoLogLength)
 	        val strShaderType = eShaderType match {
 		        case GL_VERTEX_SHADER   => "vertex"
@@ -43,10 +46,10 @@ object Shader {
 	    glLinkProgram(program);
 	    
 	    
-	    val status = glGetProgram(program, GL_LINK_STATUS);
+	    val status = GL20.glGetProgram(program, GL_LINK_STATUS);
 	    if (status == GL_FALSE)
 	    {
-	        val infoLogLength = glGetProgram(program, GL_INFO_LOG_LENGTH);
+	        val infoLogLength = GL20.glGetProgram(program, GL_INFO_LOG_LENGTH);
 	        val strInfoLog = glGetProgramInfoLog(program, infoLogLength);
 	        printf("Linker failure: %s\n", strInfoLog);
 	    }
