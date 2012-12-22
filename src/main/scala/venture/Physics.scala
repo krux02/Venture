@@ -2,8 +2,7 @@ package venture
 
 import com.badlogic.gdx.physics.box2d._
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
-import com.badlogic.gdx.math.{Matrix4, Vector2}
-import rendering.Camera
+import com.badlogic.gdx.math.Vector2
 
 object Physics {
 	val environment = new AABB(-100.0f, -100.0f, 100.0f,  100.0f)

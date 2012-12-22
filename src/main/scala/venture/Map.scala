@@ -1,11 +1,6 @@
 package venture
 
 import org.lwjgl.BufferUtils
-import org.lwjgl.opengl.GL11.{glGetInteger => _, _}
-import org.lwjgl.opengl.GL15._
-import org.lwjgl.opengl.GL20._
-import org.lwjgl.opengl.GL30._
-import scala.collection.mutable.ArrayBuilder
 import com.badlogic.gdx.math.MathUtils
 import scala.Predef._
 import scala.Some
@@ -30,6 +25,7 @@ object Intersection {
 
   def apply(r1:Ray, r2:Ray) {
 
+    /*
     val lenVec1 = r1.lenVec
     val lenVec2 = r2.lenVec
 
@@ -38,14 +34,13 @@ object Intersection {
     val lenX2 = r2.lenX
     val lenY2 = r2.lenY
 
-    /*
     r1.v1 + x * r1.lenVec = r2.v1 + y * r2.lenVec
     r1.x1 + x * r1.lenX = r2.x1 + y * r2.lenX
     r1.y1 + x * r1.lenY = r2.y1 + y * r2.lenY
-    */
 
-    // val y = (r1.x1 + (r2.y1 - r1.y1 + y * lenY2) / r1.lenY * lenX1) / lenX2 - r2.x1
-    // val x = (r2.y1 - r1.y1 + y * lenY2) / lenY1
+    val y = (r1.x1 + (r2.y1 - r1.y1 + y * lenY2) / r1.lenY * lenX1) / lenX2 - r2.x1
+    val x = (r2.y1 - r1.y1 + y * lenY2) / lenY1
+    */
   }
 
   def apply(r:Ray,q:Quad, callback:RayCastCallback) {
@@ -188,7 +183,7 @@ class Map(val tileScale:Int, val fade:Double, val generator:Generator) {
 		val tDeltaY = (1/dirY).abs
 		
 		var current = get(posX,posY)
-		var i = 0
+		val i = 0
 		while( current == 0 && i < 20 ){
 			if(tMaxX < tMaxY){
 				posX += stepX
@@ -221,32 +216,8 @@ class Map(val tileScale:Int, val fade:Double, val generator:Generator) {
 	
 }
 
-object Chunk {
-	val positionBuffer = {
-		val data = BufferUtils.createFloatBuffer(chunkSize*chunkSize*2)
-		for(x <- 0 until chunkSize; y <- 0 until chunkSize){
-			data put x+0.5f
-			data put y+0.5f
-//			data put 0
-//			data put 1
-		}
-		data.flip()
-		
-		val glBuffer = glGenBuffers()
-		glBindBuffer(GL_ARRAY_BUFFER, glBuffer)
-		glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW)
-		glBindBuffer(GL_ARRAY_BUFFER, 0)
-		glBuffer
-	}
-}
-
 class Chunk {
 	val data = BufferUtils.createShortBuffer(chunkSize*chunkSize)
-	
-	lazy val buffer = glGenBuffers()
-	glBindBuffer(GL_ARRAY_BUFFER, buffer)
-	glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW)
-	glBindBuffer(GL_ARRAY_BUFFER, 0)
 	
 	var changed = false
 	
@@ -260,10 +231,12 @@ class Chunk {
 	}
 	
 	def apply(x:Int,y:Int)               = data.get(x*chunkSize+y)
-	def update(x:Int,y:Int,v:Short):Unit = {data.put(x*chunkSize+y, v); changed = true}
+	def update(x:Int,y:Int,v:Short) {
+    data.put(x*chunkSize+y, v); changed = true
+  }
 
 	def outlineAt(x:Int,y:Int, startDir:Symbol) = {
-		val vertices = ArrayBuilder.make[Int]
+		val vertices = collection.mutable.ArrayBuilder.make[Int]
 		
 		var xx = x
 		var yy = y
@@ -407,8 +380,8 @@ class Generator(val worldFunction: (Int,Int) => Double) {
 		for(x <- 0 until chunkSize; y <- 0 until chunkSize) {
 			val replacement = replacements.find( _.conditions.find( cond => depth(x+cond.offX, y+cond.offY) != cond.value ) == None )
 			replacement match {
-				case None => chunk(x,y) = depth(x,y)
 				case Some( r ) => chunk(x,y) = r.value
+        case None => chunk(x,y) = depth(x,y)
 			}
 		}
 

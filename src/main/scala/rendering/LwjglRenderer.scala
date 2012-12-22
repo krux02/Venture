@@ -10,20 +10,53 @@ import org.lwjgl.opengl.GL20._
 import org.lwjgl.opengl.GL15._
 import org.lwjgl.opengl.GL30._
 import org.lwjgl.opengl.GL13._
+import org.lwjgl.BufferUtils
 
 object LwjglRenderer {
 
   def width:Float = Gdx.graphics.getWidth
   def height:Float = Gdx.graphics.getHeight
 
+  val chunkPositionBuffer = {
+    val data = BufferUtils.createFloatBuffer(chunkSize*chunkSize*2)
+    for(x <- 0 until chunkSize; y <- 0 until chunkSize){
+      data put x+0.5f
+      data put y+0.5f
+      //			data put 0
+      //			data put 1
+    }
+    data.flip()
+
+    val glBuffer = glGenBuffers()
+    glBindBuffer(GL_ARRAY_BUFFER, glBuffer)
+    glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW)
+    glBindBuffer(GL_ARRAY_BUFFER, 0)
+    glBuffer
+  }
+
+  val _chunkBuffers = new collection.mutable.HashMap[Chunk,Int]
+
+  def chunkBuffers(c:Chunk):Int = {
+    _chunkBuffers.getOrElseUpdate(c,{
+      val buffer = glGenBuffers()
+      glBindBuffer(GL_ARRAY_BUFFER, buffer)
+      glBufferData(GL_ARRAY_BUFFER, c.data, GL_STATIC_DRAW)
+      glBindBuffer(GL_ARRAY_BUFFER, 0)
+      buffer
+    })
+  }
+
   def renderMapChunk(chunk:Chunk, posX:Double,posY:Double,tileScale:Int,fade:Double) {
     glUseProgram(rendering.ChunkShader.theProgram)
-    glBindBuffer(GL_ARRAY_BUFFER, Chunk.positionBuffer)
+    glBindBuffer(GL_ARRAY_BUFFER, chunkPositionBuffer)
     glEnableVertexAttribArray(rendering.ChunkShader.positionLoc)
     glVertexAttribPointer(rendering.ChunkShader.positionLoc, 2, GL_FLOAT, true, 0, 0)
-    glBindBuffer(GL_ARRAY_BUFFER, chunk.buffer)
-    if(chunk.changed)
+    glBindBuffer(GL_ARRAY_BUFFER, chunkBuffers(chunk))
+    if(chunk.changed) {
       glBufferData(GL_ARRAY_BUFFER, chunk.data, GL_STATIC_DRAW)
+      println("reloading buffer")
+      chunk.changed = false
+    }
     glEnableVertexAttribArray(rendering.ChunkShader.tileIdLoc)
     glVertexAttribIPointer(rendering.ChunkShader.tileIdLoc, 1, GL_SHORT, 0, 0)
     glBindBuffer(GL_ARRAY_BUFFER, 0)
