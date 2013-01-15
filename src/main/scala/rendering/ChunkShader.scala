@@ -3,11 +3,11 @@ package rendering
 import org.lwjgl.opengl.GL20._
 
 /**
- * Created with IntelliJ IDEA.
+ * Created with IDEA.
  * User: arne
  * Date: 21.12.12
  * Time: 22:49
- * This is the Shader needet to render the MapChunks
+ * This is the Shader needed to render the MapChunks
  */
 
 object ChunkShader {
@@ -48,7 +48,7 @@ void main()
   import org.lwjgl.opengl.GL20
 
   val shaderList = List(createShader(GL_VERTEX_SHADER, vertexShaderSrc), createShader(GL_FRAGMENT_SHADER, fragmentShaderSrc))
-  val theProgram = createProgram(shaderList);
+  val theProgram = createProgram(shaderList)
   shaderList foreach GL20.glDeleteShader
 
   val arrayTextureLoc = glGetUniformLocation(theProgram, "u_arrayTexture")

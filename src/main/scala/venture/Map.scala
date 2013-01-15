@@ -158,7 +158,7 @@ class Map(val tileScale:Int, val fade:Double, val generator:Generator) {
 		hashMap.getOrElseUpdate((x,y),generator(x,y))
 	}
 	
-	def raytrace(startX:Double, startY:Double, dirX:Double, dirY:Double) {
+	def rayTrace(startX:Double, startY:Double, dirX:Double, dirY:Double) {
 		var posX = startX.floor.toInt
 		var posY = startY.floor.toInt
 		
@@ -349,22 +349,22 @@ class Chunk {
 
 
 case class Cond( offX:Int, offY:Int, value:Int )
-case class Repl( value:Short, conditions:Cond* )
+case class Replace( value:Short, conditions:Cond* )
 
 class Generator(val worldFunction: (Int,Int) => Double) {
 	
 	val replacements = Seq( 
-			Repl( 6, Cond(0,0,1), Cond(-1,0,1), Cond(1,0,1), Cond(-2,0,0), Cond(2,0,0), Cond(-1,1,0), Cond(1,1,0), Cond(0,1,0) ), //halb
+			Replace( 6, Cond(0,0,1), Cond(-1,0,1), Cond(1,0,1), Cond(-2,0,0), Cond(2,0,0), Cond(-1,1,0), Cond(1,1,0), Cond(0,1,0) ), //half
 			
-			Repl( 8, Cond(0,0,1), Cond(-1,0,0), Cond(0,1,0), Cond(1,0,1), Cond(1,1,0) ), // 50% nach oben (unterer teil)
-			Repl( 4, Cond(0,0,1), Cond(1,0,0), Cond(0,1,0), Cond(-1,0,1), Cond(-1,1,0) ), // 50% nach unten (unterer teil)
+			Replace( 8, Cond(0,0,1), Cond(-1,0,0), Cond(0,1,0), Cond(1,0,1), Cond(1,1,0) ), // 50% slope up (lower part)
+			Replace( 4, Cond(0,0,1), Cond(1,0,0), Cond(0,1,0), Cond(-1,0,1), Cond(-1,1,0) ), // 50% slope down (lower part)
 			
-			Repl( 9, Cond(0,0,1), Cond(-1,0,1), Cond(-2,0,0), Cond(-1,1,0), Cond(0,1,0) ), // 50% nach oben (oberer teil)
-			Repl( 3, Cond(0,0,1), Cond(1,0,1), Cond(2,0,0), Cond(1,1,0), Cond(0,1,0) ), // 50% nach unten (oberer teil)
-			
-			Repl( 5, Cond(0,0,1), Cond(-1,0,1), Cond(0,1,0), Cond(1,0,0) ),
-			Repl( 7, Cond(0,0,1), Cond(-1,0,0), Cond(0,1,0), Cond(1,0,1) ),
-			Repl( 2, Cond(0,0,1), Cond(0,1,0) )
+			Replace( 9, Cond(0,0,1), Cond(-1,0,1), Cond(-2,0,0), Cond(-1,1,0), Cond(0,1,0) ), // 50% slope up (upper part)
+			Replace( 3, Cond(0,0,1), Cond(1,0,1), Cond(2,0,0), Cond(1,1,0), Cond(0,1,0) ), // 50% slope down (upper part)
+
+			Replace( 5, Cond(0,0,1), Cond(-1,0,1), Cond(0,1,0), Cond(1,0,0) ),
+			Replace( 7, Cond(0,0,1), Cond(-1,0,0), Cond(0,1,0), Cond(1,0,1) ),
+			Replace( 2, Cond(0,0,1), Cond(0,1,0) )
 	)
 	
 	def apply(posX:Int,posY:Int) = {

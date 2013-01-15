@@ -103,7 +103,7 @@ class Game extends ApplicationListener {
 						Foreground(tileX, tileY) = current.toShort
 				case 1 => current = Foreground(tileX,tileY)
 				case 2 => 
-					currentOutline = Foreground.outlineAt(tileX, tileY).grouped(2).map{case Array(x, y) => new Vector2(x,y)}.toArray
+					currentOutline = (for( Array(x,y) <- Foreground.outlineAt(tileX, tileY).grouped(2) ) yield new Vector2(x,y)).toArray
 					print("outline vertices: ")
 					println(currentOutline.length)
 					println(currentOutline.mkString)
@@ -143,7 +143,7 @@ class Game extends ApplicationListener {
     if( Gdx.input.isKeyPressed(Keys.G) )
       Player.posY += move
 
-    Player.update
+    Player.update()
 
 		/*
 		if( Mouse.isButtonDown(2) ) {

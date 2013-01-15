@@ -1,8 +1,6 @@
 package rendering
 
 import venture._
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
-import com.badlogic.gdx.math.Vector2
 import MapSettings._
 import com.badlogic.gdx.Gdx
 import org.lwjgl.opengl.GL11._
@@ -19,7 +17,7 @@ object LwjglRenderer {
 
   val chunkPositionBuffer = {
     val data = BufferUtils.createFloatBuffer(chunkSize*chunkSize*2)
-    for(x <- 0 until chunkSize; y <- 0 until chunkSize){
+    for(x <- 0 until chunkSize; y <- 0 until chunkSize) {
       data put x+0.5f
       data put y+0.5f
       //			data put 0

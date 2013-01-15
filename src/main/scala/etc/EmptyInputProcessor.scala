@@ -3,11 +3,11 @@ package etc
 import com.badlogic.gdx.InputProcessor
 
 trait EmptyInputProcessor extends InputProcessor {
-	override def keyDown(keycode: Int) = {
+	override def keyDown(keyCode: Int) = {
 		false
 	}
 
-	override def keyUp(keycode: Int) = {
+	override def keyUp(keyCode: Int) = {
 		false
 	}
 

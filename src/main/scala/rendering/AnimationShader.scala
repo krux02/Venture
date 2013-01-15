@@ -3,7 +3,7 @@ package rendering
 import org.lwjgl.opengl.GL20._
 
 /**
- * Created with IntelliJ IDEA.
+ * Created with IDEA.
  * User: arne
  * Date: 22.12.12
  * Time: 18:29

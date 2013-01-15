@@ -16,13 +16,15 @@ import org.lwjgl.opengl.GL32._
 import org.lwjgl.opengl.GL33._
 
 class Texture(val id:Int, val target:Int = GL_TEXTURE_2D ) {
-	def bind() = glBindTexture(target, id)
+	def bind() {
+    glBindTexture(target, id)
+  }
 }
 
 object Texture {
 	val tiles = tile(16,16,"simple.png")
-	val playerraster = getRaster("player.png")
-	val playerTexture = tile(0,0,16,32,2,2,vertical = false, data = playerraster)
+	val playerRaster = getRaster("player.png")
+	val playerTexture = tile(0,0,16,32,2,2,vertical = false, data = playerRaster)
 	
 	private def getRaster(filename:String):Raster = try{ 
 		ImageIO.read(new File("textures",filename)).getData 
@@ -61,11 +63,11 @@ object Texture {
 		val texture = glGenTextures()
 		assert(texture != 0)
 		glBindTexture(GL_TEXTURE_2D_ARRAY, texture)
-		glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S,GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_T,GL_REPEAT);
-		glTexImage3D(GL_TEXTURE_2D_ARRAY,0,4,w,h,count,0,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8,newData);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_NEAREST)
+		glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_NEAREST)
+		glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S,GL_REPEAT)
+		glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_T,GL_REPEAT)
+		glTexImage3D(GL_TEXTURE_2D_ARRAY,0,4,w,h,count,0,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8,newData)
 		
 		new Texture(id = texture, target = GL_TEXTURE_2D_ARRAY)
 	}
@@ -98,8 +100,8 @@ object Texture {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0)
 	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 8)
 	    glGenerateMipmap(GL_TEXTURE_2D)
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR)
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST)
 		
 		new Texture(id = texture, target = GL_TEXTURE_2D)
 	}
