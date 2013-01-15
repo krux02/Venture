@@ -9,11 +9,9 @@ import org.lwjgl.opengl.GL15._
 import org.lwjgl.opengl.GL30._
 import org.lwjgl.opengl.GL13._
 import org.lwjgl.BufferUtils
+import com.badlogic.gdx.graphics.OrthographicCamera
 
-object LwjglRenderer {
-
-  def width:Float = Gdx.graphics.getWidth
-  def height:Float = Gdx.graphics.getHeight
+object LwjglRenderer extends Renderer {
 
   val chunkPositionBuffer = {
     val data = BufferUtils.createFloatBuffer(chunkSize*chunkSize*2)
@@ -100,7 +98,7 @@ object LwjglRenderer {
     box2dDebugRenderer.render(Physics.world, Camera.view)
   }
 
-  def render() {
+  override def render(camera:OrthographicCamera) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     glEnable(GL_POINT_SPRITE)
@@ -112,8 +110,8 @@ object LwjglRenderer {
     glActiveTexture(GL_TEXTURE1)
     rendering.Texture.playerTexture.bind()
 
-    val offsetX = (width*0.5f / tileSize)
-    val offsetY = (height*0.5f / tileSize)
+    val offsetX = (camera.viewportWidth*0.5f / tileSize)
+    val offsetY = (camera.viewportHeight*0.5f / tileSize)
 
     drawMapRect(Background, offsetX,offsetY)
     drawMapRect(DirectBackground, offsetX,offsetY)

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="64" height="64" tilewidth="16" tileheight="16">
+ <tileset firstgid="1" name="simple" tilewidth="16" tileheight="16">
+  <image source="../textures/simple.png" width="256" height="256"/>
+ </tileset>
+ <layer name="Hauptebene" width="64" height="64">
+  <data encoding="base64" compression="zlib">
+   eJztmmtrwzAMRdPsQTfYg5qW7cPY/vr+6WyIhwmOIiuy5YT74dBSGqxz5SRu6tMwDCcAAAAAAPDPk+fZc+e59zx0UFNL70/PmHCdsogcMZNzxpviaphDOj81+hLcPwrc5zk8Nnam+iSpR+oeuVV2L52bN0EGW/zHyu6S/rTOoCd3jbqO4B5ocW2qgYa79DzoBQ3/2tenvWRQs8bcekR7bdSrO3VvjuvmI66Xozv3OmW5XrZ2P9qc0Lo373VOaN2b95jDmfC4rMDJofe1CtX7C3HcWjY5rF1zUP2LNb9mjnubXgfmOO8duEr80979ToT334X+Px24SvufQzL/ezwPuP2XXP8s1q/aGdTA2hf+djlYO1pmYO1mlYG1j0Ue1jUDAAAAgaU9Br3sA5nX56bP3ca6lvbALJHujamdB7UHIvWPdZXWU7rPYCmPGs/wqNrc7LtuKK9H65l2QPs/17XaKH9uPdrPtLUy4PQl+L4kzP1jPdQ42r9hOGNy4PQl+H4l5PxHZj+0M9jqzxnDZdjSj17ca9TVYkxtb636aozT0hUAAAAAAAAJf0KtH2s=
+  </data>
+ </layer>
+</map>

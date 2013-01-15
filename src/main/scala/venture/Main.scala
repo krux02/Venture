@@ -1,15 +1,14 @@
 package venture
 
 import org.lwjgl.opengl.Display
-import org.lwjgl.input.Keyboard
+import org.lwjgl.input.{Mouse, Keyboard}
 import MapSettings._
 import com.badlogic.gdx
-import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.ApplicationListener
+import gdx.{InputMultiplexer, Gdx, ApplicationListener}
 import etc.EmptyInputProcessor
 import gdx.Input.Keys._
-import gdx.math.Vector2
-import rendering.Camera
+import gdx.math.{Vector3, Vector2}
+import rendering.{GdxRenderer, Camera}
 
 object Main extends App{
 	val preferences = new gdx.backends.lwjgl.LwjglApplicationConfiguration{
@@ -34,8 +33,12 @@ class Game extends ApplicationListener {
 	override def resize (width: Int, height:Int) {
 		println("rezize")
 
-    val f = 1.0f / MapSettings.tileSize.toFloat
-    Camera.setToOrtho(false,width*f,height*f)
+    Camera.viewportWidth = width.toFloat
+    Camera.viewportHeight = height.toFloat
+    Camera.near = -1.0f
+    Camera.far  =  1.0f
+    Camera.zoom =  1.0f / GdxRenderer.tiledMap.tileWidth.toFloat
+    Camera.update()
 	}
 	
 	def width:Float = Gdx.graphics.getWidth
@@ -92,8 +95,16 @@ class Game extends ApplicationListener {
 		
 		override def touchDown(x:Int, y:Int, pointer:Int, button:Int):Boolean = {
 			val (mouseX,mouseY) = mouseWordPos(x,y)
+      println(mouseX,mouseY)
+
 			val tileX = mouseX.floor.toInt
 			val tileY = mouseY.floor.toInt
+
+      val layer = GdxRenderer.tiledMap.layers.get(0)
+
+      if (tileX < layer.getWidth && tileY < layer.getHeight && 0 <= tileX && 0 <= tileY)
+        println( layer.tiles.apply(tileY).apply(tileX) )
+
 			
 			button match {
 				case 0 =>
@@ -113,7 +124,10 @@ class Game extends ApplicationListener {
 			true
 		}
 	}
-	
+
+  val buffer = new Array[Long](20)
+  var i = 0
+
 	override def render() {
 		
 		if(Display.isCloseRequested || Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
@@ -132,6 +146,13 @@ class Game extends ApplicationListener {
 		if( Gdx.input.isKeyPressed(Keys.L) )
 			Camera.position.y += move
 
+    if( Mouse.isButtonDown(2) ) {
+      val x = Mouse.getDX.toFloat / GdxRenderer.tiledMap.tileWidth
+      val y = Mouse.getDY.toFloat / GdxRenderer.tiledMap.tileHeight
+
+      Camera.position.sub(x,y,0)
+    }
+
     Camera.update()
 
     if( Gdx.input.isKeyPressed(Keys.N) )
@@ -144,19 +165,16 @@ class Game extends ApplicationListener {
       Player.posY += move
 
     Player.update()
-
-		/*
-		if( Mouse.isButtonDown(2) ) {
-			val x = (Mouse.getX -  width*0.5) / (tileSize*Foreground.tileScale)
-			val y = (Mouse.getY - height*0.5) / (tileSize*Foreground.tileScale)
-			posX += x * 0.1
-			posY += y * 0.1
-		}
-		*/
 		
 		//Physics.update
-		
-		rendering.LwjglRenderer.render()
+
+
+
+		rendering.LwjglRenderer.render(Camera)
+//    rendering.GdxRenderer.render(Camera)
+
+
+
 		
 		Display.swapBuffers()
 	}
@@ -175,6 +193,8 @@ class Game extends ApplicationListener {
 	}
 	
 	def mouseWordPos(mouseX:Int, mouseY:Int) = {
+    val tmp = new Vector3(mouseX,mouseY,0.5f)
+    Camera.unproject(tmp, 0,0, Camera.viewportWidth, Camera.viewportHeight)
 		val x = Camera.position.x + (mouseX -  width*0.5f) / (tileSize * Foreground.tileScale)
 		val y = Camera.position.y + (height*0.5f - mouseY) / (tileSize * Foreground.tileScale)
 		(x,y)

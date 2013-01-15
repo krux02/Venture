@@ -230,7 +230,12 @@ class Chunk {
 		c
 	}
 	
-	def apply(x:Int,y:Int)               = data.get(x*chunkSize+y)
+	def apply(x:Int,y:Int) =
+    if(0<=x && x < chunkSize && 0<=y && y < chunkSize)
+      data.get(x*chunkSize+y)
+    else
+      0.toShort
+
 	def update(x:Int,y:Int,v:Short) {
     data.put(x*chunkSize+y, v); changed = true
   }
@@ -351,6 +356,12 @@ class Chunk {
 case class Cond( offX:Int, offY:Int, value:Int )
 case class Replace( value:Short, conditions:Cond* )
 
+class GdxTilemapGenerator(val worldFunction: (Int,Int) => Float) {
+  def apply(posX:Int, posY:Int) = {
+
+  }
+}
+
 class Generator(val worldFunction: (Int,Int) => Double) {
 	
 	val replacements = Seq( 
@@ -363,9 +374,17 @@ class Generator(val worldFunction: (Int,Int) => Double) {
 			Replace( 3, Cond(0,0,1), Cond(1,0,1), Cond(2,0,0), Cond(1,1,0), Cond(0,1,0) ), // 50% slope down (upper part)
 
 			Replace( 5, Cond(0,0,1), Cond(-1,0,1), Cond(0,1,0), Cond(1,0,0) ),
-			Replace( 7, Cond(0,0,1), Cond(-1,0,0), Cond(0,1,0), Cond(1,0,1) ),
-			Replace( 2, Cond(0,0,1), Cond(0,1,0) )
+			Replace( 7, Cond(0,0,1), Cond(-1,0,0), Cond(0,1,0), Cond(1,0,1) )
 	)
+
+  val replacementsPost = Seq(
+    Replace(  2, Cond(0,0,1), Cond(0,1,0) ),
+
+    Replace( 20, Cond(0,0,1), Cond(0,1,4) ),
+    Replace( 21, Cond(0,0,1), Cond(0,1,5) ),
+    Replace( 23, Cond(0,0,1), Cond(0,1,7) ),
+    Replace( 24, Cond(0,0,1), Cond(0,1,8) )
+  )
 	
 	def apply(posX:Int,posY:Int) = {
 		val offsetX = posX*chunkSize
@@ -375,18 +394,23 @@ class Generator(val worldFunction: (Int,Int) => Double) {
 			if( 0 < worldFunction(offsetX+x,offsetY+y) ) 0 else 1
 		
 		val chunk = new Chunk
-		
-		
-		for(x <- 0 until chunkSize; y <- 0 until chunkSize) {
-			val replacement = replacements.find( _.conditions.find( cond => depth(x+cond.offX, y+cond.offY) != cond.value ) == None )
-			replacement match {
-				case Some( r ) => chunk(x,y) = r.value
+
+
+    for(x <- 0 until chunkSize; y <- 0 until chunkSize) {
+      val replacement = replacements.find( _.conditions.find( cond => depth(x+cond.offX, y+cond.offY) != cond.value ) == None )
+      replacement match {
+        case Some( r ) => chunk(x,y) = r.value
         case None => chunk(x,y) = depth(x,y)
-			}
-		}
+      }
+    }
+
+    for (x <- 0 until chunkSize; y <- 0 until chunkSize) {
+      val replacement = replacementsPost.find( _.conditions.find( cond => chunk(x+cond.offX, y+cond.offY) != cond.value) == None )
+      if (replacement.isDefined)
+        chunk(x,y) = replacement.get.value
+    }
 
 		chunk
-		
 	}
 }
 

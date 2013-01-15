@@ -39,7 +39,7 @@ object Texture {
 		val data:Raster = image.getData
 		val count    = (data.getHeight/h) * (data.getWidth/w)
 		val rowLimit = data.getHeight/h
-		tile(0,0,w,h,25,rowLimit,vertical = true, data = data)
+		tile(0,0,w,h,25,rowLimit,vertical = false, data = data)
 	}
 	
 	private def tile(x:Int,y:Int,w:Int,h:Int,count:Int,rowLimit:Int,vertical:Boolean,data:Raster) = {
